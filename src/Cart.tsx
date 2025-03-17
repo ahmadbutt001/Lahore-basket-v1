@@ -1,34 +1,76 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext  } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from "@react-navigation/native";
+import { CartContext,  } from '../src/CartContext'; // Adjust the path as needed
 
 
 const width = Dimensions.get('screen').width / 2 - 40;
 
 
 
-const data = [
-    { id: '1', title: "Nexton Sunblock Ligtening Lotion 30 ml", price: 1000, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786', about: 'This is about section its expand and collapse for product discription' },
-    { id: '2', title: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-    { id: '3', title: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-    { id: '4', title: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-    { id: '5', title: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-    { id: '6', title: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-    { id: '7', title: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-    { id: '8', title: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: "", image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-  ];
-
-
-
+  
 const CartScreen = () => { 
+      const cartContext = useContext(CartContext);
+    
+        const { 
+          // cart = [], 
+          addToCart = () => {}, 
+          // removeFromCart = () => {}, 
+          updateQuantity = () => {}, 
+          // cartQuantity = 0 
+        } = cartContext || {};
+  interface Product {
+    id: number;
+    title: string;
+    price: number;
+    discount?: number;
+    images: string;
+    Discount: number;
+  }
+   const [products, setProducts] = useState<Product[]>([]);
+    const [originalProducts, setOriginalProducts] = useState<Product[]>([]);
+    const [searchResults, setSearchResults] = useState<Product[]>([]);
+    const [randomProducts, setRandomProducts] = useState<Product[]>([]);
   const navigation = useNavigation();
     // const [cart, setCart] = useState([]);
-    const [cart, setCart] = useState<{ images: string; title: string; price: number; Discount: string; quantity: number; }[]>([]);
+    const [cart, setCart] = useState<{ images: string; title: string; price: number; Discount: string; quantity: number; id:number; }[]>([]);
 //   const { item } = route.params;  // Yahan selected product ka data ayega
   // const [quantity, setQuantity] = useState(0);s
   const [cartQuantity, setCartQuantity] = useState(0);
+
+
+
+
+   useEffect(() => {
+      const fetchProducts = async () => {
+        try {
+          const response = await fetch('https://api.g3studio.co/api/products');
+          const data = await response.json();
+  
+          if (data && Array.isArray(data.products)) {
+            setProducts(data.products);
+            setOriginalProducts(data.products);
+            shuffleRandomProducts(data.products);
+          } else {
+            console.error('Products array not found in response:', data);
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        }
+      };
+  
+      fetchProducts();
+    }, []);
+  
+  
+    const shuffleRandomProducts = (productsList: Product[]) => {
+      const shuffled = [...productsList].sort(() => 0.5 - Math.random());
+      setRandomProducts(shuffled.slice(0, 10)); // Pick 6 random products
+    };
+
+
 
 
 
@@ -136,7 +178,11 @@ useFocusEffect(
 };
 
 
-    const Card = ({ items }) => (
+    const Card = ({ items }) => {
+      const discountPercentage = Math.round(
+        ((items?.variants[0].price - items?.variants[0].discountPrice) / items?.variants[0].price) * 100
+      );
+      return (
       // console.log("Item being passed:", item), // Debugging line
         <TouchableOpacity style={{ marginBottom: 20, marginTop: 5, }}
     
@@ -154,7 +200,8 @@ useFocusEffect(
                 alignItems: 'center',
               }}>
               <Image
-                source={{ uri: items.image }}
+                        source={{ uri: "https://api.g3studio.co"+items.images[0]?.src}}
+
                 style={{
                   resizeMode: 'contain', height: "100%", width: "100%"
     
@@ -163,7 +210,8 @@ useFocusEffect(
     
             </View>
     
-            {items?.Discount && (
+            {items?.variants[0].discountPrice && items?.variants[0].price >  items?.variants[0].discountPrice && (
+
               <View style={{
                 height: 30,
                 width: '25%',
@@ -177,7 +225,7 @@ useFocusEffect(
     
               }}>
     
-                <Text style={{ color: 'white', fontSize: 14 }}>{items.Discount}</Text>
+                <Text style={{ color: 'white', fontSize: 14 }}>{discountPercentage}%</Text>
     
               </View>)}
     
@@ -195,7 +243,8 @@ useFocusEffect(
                 alignItems: 'center',
               }}>
               <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#EC4505' }}>
-                Rs. {items.price}
+              Rs. {items?.variants[0].discountPrice ? items.variants[0].discountPrice : items?.variants[0].price}
+
               </Text>
     
             </View>
@@ -203,29 +252,62 @@ useFocusEffect(
           </View>
           <TouchableOpacity
             activeOpacity={0.6}
-          // style={{}}
           >
-            <View
-              style={{
-                
-                alignSelf:'center',
-                height: 25,
-                width,
-                backgroundColor: "#FCD6C7",
-                borderBottomEndRadius: 10,
-                borderBottomStartRadius: 10,
-                justifyContent: 'center',
-                alignItems: 'center',
-    
-              }}
-              >
-              <Image
-                style={{ height: 20, width: 20 }}
-                source={require('../assets/Fast Cart.png')}
-              />
-    
-            </View>
-          </TouchableOpacity>
+        
+          </TouchableOpacity> {cart.some((cartItem) => cartItem.id === items.id) ? (
+                        // If item is already in cart, show quantity buttons
+                        <View style= {style.quantityContainer} >
+                          <TouchableOpacity  
+                          onPress={() => {
+                const currentItem = cart.find((cartItem) => cartItem.id === items.id);
+                if (currentItem && currentItem.quantity > 1) {
+                  updateQuantity(items.id, currentItem.quantity - 1);
+                } else {
+                  removeFromCart(items.id); // Agar quantity 1 hai, toh item remove ho jaye
+                }
+              }} style={style.quantityBtn}>
+                            <Text style={style.btnText}>-</Text>
+                          </TouchableOpacity>
+                          
+                          <Text style={style.quantityText}>
+                          {cart.find((cartItem) => cartItem.id === items.id)?.quantity || 1}
+                          </Text>
+                          
+                          <TouchableOpacity
+                           onPress={() => {
+                const currentItem = cart.find((cartItem) => cartItem.id === items.id);
+                if (currentItem) {
+                  updateQuantity(items.id, currentItem.quantity + 1);
+                }
+              }}  style={style.quantityBtn}>
+                            <Text style={style.btnText}>+</Text>
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        // If item is NOT in cart, show "Add to Cart" button
+                        <TouchableOpacity onPress={() => addToCart(items)} style={style.addToCartBtn}>
+           <View
+                        style={{
+                          
+                          alignSelf:'center',
+                          height: 25,
+                          width,
+                          backgroundColor: "#FCD6C7",
+                          borderBottomEndRadius: 10,
+                          borderBottomStartRadius: 10,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+              
+                        }}
+                        >
+                        <Image
+                          style={{ height: 20, width: 20 }}
+                          source={require('../assets/Fast Cart.png')}
+                        />
+              
+                      </View>
+                        </TouchableOpacity>
+                      )}
     
         </TouchableOpacity>
     
@@ -234,7 +316,7 @@ useFocusEffect(
     
       );
 
-
+    }
 
 
    
@@ -251,7 +333,7 @@ useFocusEffect(
                                     showsHorizontalScrollIndicator={false}
                                     // numColumns={2}
                                     horizontal
-                                    data={data}
+                                    data={randomProducts}
                                     renderItem={({ item }) => <Card items={item} />}
                                   />
 
@@ -278,7 +360,7 @@ useFocusEffect(
                               >
                                 {item.title} 
                       </Text> 
-                     <Text style={{fontSize:18, fontWeight:'bold', color:'#EC4505'}}>Rs. {item?.variants[0].price}  </Text>
+                     <Text style={{fontSize:18, fontWeight:'bold', color:'#EC4505'}}>$. {item?.variants[0].price}  </Text>
 
 
                      <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth:0, borderColor:'#A5A3A3', left:70, top:20 }}>
@@ -387,6 +469,47 @@ const style = StyleSheet.create({
     // bottom:10
     // padding: 10,
     // backgroundColor: '#EC4505'
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FCD6C7',
+    borderRadius: 10,
+    marginHorizontal: 5, // Added margin for spacing
+    // padding: 5,
+    width,
+    justifyContent:'center'
+  },
+  quantityBtn: {
+    backgroundColor: '#EC4505',
+    // paddingVertical: 5,
+    paddingHorizontal: "12.5%",
+    // borderRadius: 5,
+    borderBottomEndRadius: 10,
+    borderBottomStartRadius: 10,
+  },
+  btnText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  quantityText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginHorizontal: 22,
+    color:'#EC4505',
+    backgroundColor:'#FCD6C7'
+  },
+  addToCartBtn: {
+    // backgroundColor: 'white',
+    // paddingVertical: 10,
+    // paddingHorizontal: 30,
+    borderRadius: 15,
+    flexDirection: 'row',
+
+    alignItems: 'center',
+    marginHorizontal: 5, // Added margin for spacing
+
   },
 });
 
