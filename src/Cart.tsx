@@ -360,7 +360,7 @@ useFocusEffect(
                               >
                                 {item.title} 
                       </Text> 
-                     <Text style={{fontSize:18, fontWeight:'bold', color:'#EC4505'}}>$. {item?.variants[0].price}  </Text>
+                     <Text style={{fontSize:18, fontWeight:'bold', color:'#EC4505'}}>Rs. {item?.variants[0].price}  </Text>
 
 
                      <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth:0, borderColor:'#A5A3A3', left:70, top:20 }}>
