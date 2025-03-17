@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext  } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartContext,  } from '../src/CartContext'; // Adjust the path as needed
 
 const width = Dimensions.get('screen').width / 2 - 30;
 
 
 
-const ProductListScreen = ({navigation, route }) => {
+const ProductListScreen = ({navigation, route , item}:any) => {
+  
     const cartContext = useContext(CartContext);
     const { 
       cart = [], 
@@ -24,8 +24,7 @@ const ProductListScreen = ({navigation, route }) => {
       price: number;
       discount?: number;
       images: string;
-      Discount: number;
-    }
+      Discount: number;  }
 const { categoryId, categoryName } = route.params;
 const [products, setProducts] = useState<Product[]>([]);
 
@@ -35,7 +34,7 @@ const [products, setProducts] = useState<Product[]>([]);
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://52.74.115.234:5000/api/products');
+        const response = await fetch('https://api.g3studio.co/api/products');
         const data = await response.json();
 
         // console.log('API Response:', data); // Debugging purpose
@@ -58,6 +57,11 @@ const [products, setProducts] = useState<Product[]>([]);
   const filteredProducts = products.filter((product) => product.categoryId === categoryId);
 
 
+  
+  const discountPercentage = Math.round(
+    ((item?.variants[0].price - item?.variants[0].discountPrice) / item?.variants[0].price) * 100
+  );
+   
 
 
   return (
@@ -93,7 +97,7 @@ const [products, setProducts] = useState<Product[]>([]);
                       }}>
                       <Image
                         // source={{ uri: item.image }}
-        source={{ uri: "http://52.74.115.234:5000"+item.images[0]?.src }}
+        source={{ uri: "https://api.g3studio.co"+item.images[0]?.src}}
                         
                         style={{
                           resizeMode: 'contain', height: "100%", width: "100%"
@@ -102,8 +106,8 @@ const [products, setProducts] = useState<Product[]>([]);
                       />
             
                     </View>
-            
-                    {item?.Discount && (
+            {/* {item.price } */}
+               {item?.variants[0].discountPrice && item?.variants[0].price >  item?.variants[0].discountPrice && (
                       <View style={{
                         height: 30,
                         width: '25%',
@@ -117,7 +121,7 @@ const [products, setProducts] = useState<Product[]>([]);
             
                       }}>
             
-                        <Text style={{ color: 'white', fontSize: 14 }}>{item.Discount}</Text>
+                        <Text style={{ color: 'white', fontSize: 14 }}>{discountPercentage}%</Text>
             
                       </View>)}
             
@@ -135,7 +139,7 @@ const [products, setProducts] = useState<Product[]>([]);
                         alignItems: 'center',
                       }}>
                       <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#EC4505' }}>
-                        Rs. {item?.variants[0].price}
+                      Rs. {item?.variants[0].discountPrice ? item.variants[0].discountPrice : item?.variants[0].price}
                       </Text>
             
                     </View>
@@ -234,7 +238,11 @@ card: {
   // marginBottom: 20,
   padding: 15,
   elevation: 8,
-  shadowColor: 'black'
+  shadowColor: 'black',
+  // shadowColor: '#000',         // Shadow color
+  shadowOffset: { width: 5, height: 20 }, // Shadow position
+  shadowOpacity: 0.15,         // Shado5w opacity
+  shadowRadius: 3, 
 },
 addToCartBtn: {
   // backgroundColor: 'white',

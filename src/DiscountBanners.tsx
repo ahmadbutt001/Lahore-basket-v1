@@ -29,7 +29,7 @@ const DiscountBanners: React.FC = () => {
 
   const fetchBanners = async () => {
     try {
-      const response = await fetch('http://192.168.18.31:5000/api/banners');
+      const response = await fetch('https://api.g3studio.co/api/banners');
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -43,16 +43,24 @@ const DiscountBanners: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: Banner }) => (
+    <>
+    {item.type == "DISCOUNT"?
     <View>
     {/* <Text style={{fontWeight:'bold' , padding:15, fontSize:15}}>Discounts:</Text> */}
     <View 
     style={styles.slide}
     >
         {/* <Text style={{fontWeight:'bold' , padding:10,}}>jsjkugkvhjkkjlvjhvjlhvhlj</Text> */}
-      <Image source={{ uri: item.imageUrl }} style={styles.image} />
+      <Image 
+      // source={{ uri: item.imageUrl }} 
+      source={{ uri: "https://api.g3studio.co/"+item?.imageUrl}}
+      style={styles.image} />
       
     </View>
-    </View>
+    </View>:<></> }
+    
+    </>
+    
   );
 
   if (loading) {
@@ -61,8 +69,9 @@ const DiscountBanners: React.FC = () => {
 
   return (
    <View>
-    <Text style={{fontWeight:'bold' , padding:10, fontSize:20}}>Discounts:</Text> 
+    {/* <Text style={{fontWeight:'bold' , padding:10, fontSize:20, }}>Promotions:</Text>  */}
     <View style={styles.container}>
+    <Text style={{fontWeight:'bold' , padding:0, fontSize:20,  alignSelf:'flex-start', left:10, top:15 }}>Promotions:</Text> 
         
       <FlatList
         data={banners}
@@ -80,9 +89,10 @@ const DiscountBanners: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    marginTop:10,
+    marginTop:0,
     justifyContent: 'center',
     alignItems: 'center',
+    
   },
   slide: {
     width,

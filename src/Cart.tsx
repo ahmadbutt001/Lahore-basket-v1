@@ -25,9 +25,9 @@ const data = [
 const CartScreen = () => { 
   const navigation = useNavigation();
     // const [cart, setCart] = useState([]);
-    const [cart, setCart] = useState<{ image: string; name: string; price: number; Discount: string; quantity: number; }[]>([]);
+    const [cart, setCart] = useState<{ images: string; title: string; price: number; Discount: string; quantity: number; }[]>([]);
 //   const { item } = route.params;  // Yahan selected product ka data ayega
-  const [quantity, setQuantity] = useState(0);
+  // const [quantity, setQuantity] = useState(0);s
   const [cartQuantity, setCartQuantity] = useState(0);
 
 
@@ -79,6 +79,7 @@ useFocusEffect(
         loadCart();
     }, []);
 
+    
     const loadCart = async () => {
         const savedCart = await AsyncStorage.getItem('cart');
         if (savedCart) {
@@ -131,7 +132,7 @@ useFocusEffect(
 
 
   const calculateTotalPrice = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    return cart.reduce((total, item) => total + item?.variants[0].price * item.quantity, 0); 
 };
 
 
@@ -269,15 +270,15 @@ useFocusEffect(
                 renderItem={({ item, index }) => (
                     
                     <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center',  backgroundColor:"white", borderRadius:30, marginLeft:15, marginRight:15, marginBottom:5, }}>
-                        <Image source={{ uri: item.image }} style={{ width: 100, height: 100, marginRight: 10 }} />
+                        <Image source={{ uri: "https://api.g3studio.co"+item.images[0]?.src }} style={{ width: 100, height: 100, marginRight: 10 }} />
                         <View style={{padding:10, bottom:10}}>
                         <Text style={{fontSize:16, fontWeight:'bold', marginBottom:5, width:"40%"}} 
                               // numberOfLines={1}
                               // ellipsizeMode="tail"
                               >
-                                {item.name} 
+                                {item.title} 
                       </Text> 
-                     <Text style={{fontSize:18, fontWeight:'bold', color:'#EC4505'}}>Rs. {item.price}   </Text>
+                     <Text style={{fontSize:18, fontWeight:'bold', color:'#EC4505'}}>Rs. {item?.variants[0].price}  </Text>
 
 
                      <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth:0, borderColor:'#A5A3A3', left:70, top:20 }}>
@@ -334,19 +335,6 @@ useFocusEffect(
                 )}
             />
 
-
-  {/* <TouchableOpacity activeOpacity={0.8} style={{ width: '90%', backgroundColor: '#EC4505', position: 'absolute', bottom: 10, padding: 5, borderRadius:50, alignSelf:'center'}}>
-        {/* <View style={style.container}> */}
-              
-              {/* <View style={{padding:10, flexDirection:'row', justifyContent:'space-between'}}>
-                
-                  <Text style={{fontSize:15, color:'white', fontWeight:'bold',}}>Proceed to Checkout</Text>
-                  <Text style={{fontSize:15, color:'white', fontWeight:'bold', left:10}}> Rs.</Text>
-               
-                </View> */}
-
-         {/* </View> */}
-   {/* </TouchableOpacity> */} 
    {cart.some(cartItem => cartItem) ? (
 
          
@@ -357,7 +345,7 @@ useFocusEffect(
     //      { totalPrice: calculateTotalPrice() },
     //      { cart }
     //     )}
-        onPress={() => navigation.navigate('Checkout', { cart, totalPrice: calculateTotalPrice() })}
+        onPress={() => navigation.navigate('Checkout', {item: cart, cart, totalPrice: calculateTotalPrice() })}
 >
   
     {/* <View style={style.container}> */}

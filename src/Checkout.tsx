@@ -1,148 +1,268 @@
-// import React from 'react';
-// import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+
+// import React, { useEffect, useState } from 'react';
+// import {
+//   View,
+//   Text,
+//   FlatList,
+//   Image,
+//   TextInput,
+//   TouchableOpacity,
+//   StyleSheet,
+//   SafeAreaView,
+//   Animated,
+//   ScrollView,
+//   Alert,
+// } from 'react-native';
 
 // const CheckoutScreen = ({ route, navigation }) => {
-//   const { item } = route.params; // Yeh data DetailsScreen se aya hai
+//   const { cart = [], totalPrice } = route.params || {};
+//   const item = route.params?.item;
+//   console.log('Checkout Item:', item);
+//   console.log('Total Price:', totalPrice);
+
+//   const [name, setName] = useState('');
+//   const [email, setEmail] = useState('');
+//   const [phone, setPhone] = useState('');
+//   const [address, setAddress] = useState('');
+//   const [paymentMethod, setPaymentMethod] = useState('COD'); // Default: Cash on Delivery
+//   const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
+//   const [expanded, setExpanded] = useState(false);
+//   const [animation] = useState(new Animated.Value(0));
+
+//   const handleOrder = async () => {
+//     // Prepare the items array
+//     const items = cart.length > 0 ? cart : item ? [item] : [];
+
+//     const orderData = {
+//       customer: {
+//         name: name, // Use the name from state
+//         email: email, // Use the email from state
+//         phone: phone, // Use the phone from state
+//       },
+//       items: items.map((item) => ({
+//         variantId: item.variants[0]?.id, // Use the variant ID
+//         quantity: item.quantity || 1, // Default to 1 if quantity is missing
+//       })),
+//       paymentMethod: paymentMethod === 'COD' ? 'COD' : 'credit-card', // Map payment method
+//       address: {
+//         address: address, // Use the address from state
+//         city: 'Lahore', // Replace with actual city if available
+//         state: 'Punjab', // Replace with actual state if available
+//         zip: '12345', // Replace with actual zip if available
+//         country: 'Pakistan', // Replace with actual country if available
+//         carrier: 'TCS', // Replace with actual carrier if available
+//       },
+//     };
+
+//     try {
+//       const response = await fetch('https://api.g3studio.co/api/cart/checkout/direct', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           Cookie: 'connect.sid=s%3A7sXM8QLAA4rc3VhdxSHrBgv-476RgEnT.xhChcpaDkRc6eyXIGpFnCvOwTJfZaxCeCzHQNGbV1tI', // Use the correct cookie
+//         },
+//         body: JSON.stringify(orderData),
+//       });
+
+//       // Log the raw response text
+//       const responseText = await response.text();
+//       console.log('Raw Response:', responseText);
+
+//       // Check if the response is valid JSON
+//       let result;
+//       try {
+//         result = JSON.parse(responseText);
+//       } catch (jsonError) {
+//         console.error('JSON Parse Error:', jsonError);
+//         throw new Error('Invalid JSON response from server');
+//       }
+
+//       if (response.ok) {
+//         Alert.alert('Success', 'Your order has been placed successfully!');
+//         console.log('Order Placed:', result);
+//       } else {
+//         Alert.alert('Error', 'Failed to place order. Please try again.');
+//         console.error('Order Failed:', result);
+//       }
+//     } catch (error) {
+//       Alert.alert('Error', 'An error occurred. Please check your connection.');
+//       console.error('Error:', error);
+//     }
+//   };
+
+//   const toggleExpand = () => {
+//     const finalValue = expanded ? 0 : 1;
+
+//     Animated.timing(animation, {
+//       toValue: finalValue,
+//       duration: 300,
+//       useNativeDriver: false,
+//     }).start();
+
+//     setExpanded(!expanded);
+//   };
+
+//   const maxHeight = animation.interpolate({
+//     inputRange: [0, 1],
+//     outputRange: [0, 300], // Adjust height for your content
+//   });
 
 //   return (
+//     <SafeAreaView style={styles.container}>
+//       <ScrollView>
+//         <View style={{ paddingHorizontal: 2, marginTop: 0 }}>
+//           <View style={styles.containerani}>
+//             <TouchableOpacity style={styles.toggleButton} onPress={toggleExpand}>
+//               <Text style={styles.toggleText}>{expanded ? 'Order Summary' : 'Order Summary'}</Text>
+//               <Image
+//                 source={expanded ? require('../assets/Slide Up.png') : require('../assets/Down Button.png')}
+//                 style={{ width: 20, height: 20, backgroundColor: 'black' }}
+//               />
+//             </TouchableOpacity>
 
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Checkout</Text>
-//       <Image source={{ uri: item.image }} style={styles.image} />
-//       <Text style={styles.name}>{item.name}</Text>
-//       <Text style={styles.price}>Rs.{item.price}</Text>
+//             <Animated.View style={[styles.content, { maxHeight }]}>
+//               <FlatList
+//                 data={cart.length > 0 ? cart : item ? [item] : []}
+//                 keyExtractor={(item, index) => index.toString()}
+//                 renderItem={({ item }) => (
+//                   <View style={styles.cartItem}>
+//                     <Image source={{ uri: 'https://api.g3studio.co' + item.images[0]?.src }} style={styles.image} />
+//                     <View style={styles.itemDetails}>
+//                       <Text style={styles.itemName}>{item.title}</Text>
+//                       <Text style={styles.itemPrice}>Rs. {item?.variants[0].price}</Text>
+//                       <Text style={styles.itemqty}>qty {item.quantity}</Text>
+//                     </View>
+//                   </View>
+//                 )}
+//               />
+//               <Text style={styles.totalPrice}>Total: Rs. {totalPrice || 0}</Text>
+//             </Animated.View>
+//           </View>
+//         </View>
 
-//       <TouchableOpacity 
-//         style={styles.confirmButton} 
-//         onPress={() => alert('Order Placed Successfully!')}
-//       >
-//         <Text style={styles.confirmText}>Confirm Order</Text>
-//       </TouchableOpacity>
-//     </View>
+//         <View style={styles.contactForm}>
+//           <TextInput
+//             placeholder="Email"
+//             style={styles.input}
+//             value={email}
+//             onChangeText={setEmail}
+//             keyboardType="email-address"
+//           />
+//           <TextInput
+//             placeholder="Full Name"
+//             style={styles.input}
+//             value={name}
+//             onChangeText={setName}
+//           />
+//           <TextInput
+//             placeholder="Phone Number"
+//             style={styles.input}
+//             value={phone}
+//             onChangeText={setPhone}
+//             keyboardType="phone-pad"
+//           />
+//           <TextInput
+//             placeholder="Address"
+//             style={styles.input}
+//             value={address}
+//             onChangeText={setAddress}
+//             keyboardType="default"
+//           />
+
+//           <Text style={styles.sectionHeadern}>Shipping Method</Text>
+//           <Text style={styles.shippingMethodn}>Free Delivery</Text>
+
+//           <Text style={styles.sectionHeadern}>Payment</Text>
+//           <TouchableOpacity style={styles.radioOptionn} onPress={() => setPaymentMethod('COD')}>
+//             <Text style={[styles.radioTextn, paymentMethod === 'COD' && styles.selectedOptionn]}>
+//               ● Cash on Delivery (COD)
+//             </Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity style={styles.radioOptionn} onPress={() => setPaymentMethod('Card')}>
+//             <Text style={[styles.radioTextn, paymentMethod === 'Card' && styles.selectedOptionn]}>
+//               ○ Debit - Credit Card
+//             </Text>
+//           </TouchableOpacity>
+
+//           <Text style={styles.sectionHeadern}>Billing Address</Text>
+//           <TouchableOpacity style={styles.radioOptionn} onPress={() => setBillingSameAsShipping(true)}>
+//             <Text style={[styles.radioTextn, billingSameAsShipping && styles.selectedOptionn]}>
+//               ● Same as Shipping Address
+//             </Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity style={styles.radioOptionn} onPress={() => setBillingSameAsShipping(false)}>
+//             <Text style={[styles.radioTextn, !billingSameAsShipping && styles.selectedOptionn]}>
+//               ○ Use a Different Billing Address
+//             </Text>
+//           </TouchableOpacity>
+//         </View>
+
+//         <TouchableOpacity style={styles.orderButton} onPress={handleOrder}>
+//           <Text style={styles.orderText}>Place Order</Text>
+//         </TouchableOpacity>
+//       </ScrollView>
+//     </SafeAreaView>
 //   );
 // };
 
+// // Styles remain the same as in your original code
 // const styles = StyleSheet.create({
-//   container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
-//   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
-//   image: { width: 150, height: 150, resizeMode: 'contain', marginBottom: 10 },
-//   name: { fontSize: 20, fontWeight: 'bold' },
-//   price: { fontSize: 18, color: '#EC4505', marginBottom: 20 },
-//   confirmButton: { backgroundColor: '#EC4505', padding: 10, borderRadius: 10 },
-//   confirmText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+//   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+//   title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
+//   cartItem: { flexDirection: 'row', padding: 10, borderBottomWidth: 1, borderColor: '#ddd' },
+//   image: { width: 80, height: 80, marginRight: 10 },
+//   itemDetails: { justifyContent: 'center' },
+//   itemName: { fontSize: 16, fontWeight: 'bold' },
+//   itemPrice: { fontSize: 16, color: '#EC4505' },
+//   itemqty: { fontSize: 16, color: 'Black' },
+//   totalPrice: { fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginVertical: 15 },
+//   contactForm: { marginVertical: 10 },
+//   input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 10, marginBottom: 10 },
+//   orderButton: { backgroundColor: '#EC4505', padding: 15, borderRadius: 50, alignItems: 'center', marginTop: 10 },
+//   orderText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+//   containerani: {
+//     backgroundColor: 'white',
+//     padding: 10,
+//     borderRadius: 20,
+//     elevation: 3,
+//   },
+//   toggleButton: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//     padding: 10,
+//   },
+//   toggleText: {
+//     fontSize: 18,
+//     fontWeight: 'bold',
+//     color: 'black',
+//   },
+//   content: {
+//     overflow: 'scroll',
+//   },
+//   description: {
+//     padding: 10,
+//     fontSize: 16,
+//     color: 'white',
+//   },
+//   containern: { padding: 20 },
+//   headern: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
+//   cartItemn: { flexDirection: 'row', marginBottom: 10 },
+//   imagen: { width: 50, height: 50, marginRight: 10 },
+//   itemNamen: { fontSize: 16 },
+//   itemPricen: { color: 'gray' },
+//   inputn: { borderWidth: 1, padding: 10, marginBottom: 10, borderRadius: 5 },
+//   sectionHeadern: { fontSize: 18, fontWeight: 'bold', marginTop: 10 },
+//   shippingMethodn: { fontSize: 16, color: 'green', marginVertical: 5 },
+//   radioOptionn: { flexDirection: 'row', alignItems: 'center', marginVertical: 5 },
+//   radioTextn: { fontSize: 16 },
+//   selectedOptionn: { fontWeight: 'bold' },
+//   totalPricen: { fontSize: 18, fontWeight: 'bold', marginTop: 10 },
+//   payButtonn: { backgroundColor: 'orange', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 10 },
+//   payButtonTextn: { color: 'white', fontSize: 18 },
 // });
 
 // export default CheckoutScreen;
-
-
-
-
-// import React, {useState} from 'react';
-// import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image } from 'react-native';
-
-// const CheckoutScreen = ({ route, navigation }) => {
-//     const { totalPrice } = route.params; // Total price passed from CartScreen
-//         // const [item] = useState <{ image: string; name: string; price: number; Discount: string; }[]>([]) ;
-
-//     return (
-//         <SafeAreaView style={styles.container}>
-     
-//             <View style={styles.header}>
-//                 <Text style={styles.headerText}>Checkout</Text>
-//             </View>
-//             {/* <Image source={{ uri: item.image }} style={styles.image} />
-//       <Text style={styles.name}>{item.name}</Text>
-//       <Text style={styles.price}>Rs.{item.price}</Text> */}
-
-//             <View style={styles.content}>
-//                 <Text style={styles.totalPriceText}>Total Price: Rs. {totalPrice}</Text>
-
-//                 {/* Add more checkout details here */}
-//                 <View style={styles.section}>
-//                     <Text style={styles.sectionTitle}>Delivery Address</Text>
-//                     <Text style={styles.sectionText}>123 Main Street, City, Country</Text>
-//                 </View>
-
-//                 <View style={styles.section}>
-//                     <Text style={styles.sectionTitle}>Payment Method</Text>
-//                     <Text style={styles.sectionText}>Credit Card (**** **** **** 1234)</Text>
-//                 </View>
-
-//                 {/* Proceed to Payment Button */}
-//                 <TouchableOpacity
-//                     style={styles.proceedButton}
-//                     onPress={() => {
-//                         // Navigate to Payment Screen or process payment
-//                         alert('Payment functionality to be implemented.');
-//                     }}
-//                 >
-//                     <Text style={styles.proceedButtonText}>Proceed to Payment</Text>
-//                 </TouchableOpacity>
-//             </View>
-//         </SafeAreaView>
-//     );
-// };
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         backgroundColor: '#f5f5f5',
-//     },
-//     header: {
-//         backgroundColor: '#EC4505',
-//         padding: 15,
-//         alignItems: 'center',
-//     },
-//     headerText: {
-//         fontSize: 20,
-//         fontWeight: 'bold',
-//         color: 'white',
-//     },
-//     content: {
-//         flex: 1,
-//         padding: 20,
-//     },
-//     totalPriceText: {
-//         fontSize: 22,
-//         fontWeight: 'bold',
-//         color: '#333',
-//         marginBottom: 20,
-//     },
-//     section: {
-//         marginBottom: 20,
-//     },
-//     sectionTitle: {
-//         fontSize: 18,
-//         fontWeight: 'bold',
-//         color: '#333',
-//         marginBottom: 5,
-//     },
-//     sectionText: {
-//         fontSize: 16,
-//         color: '#666',
-//     },
-//     proceedButton: {
-//         backgroundColor: '#EC4505',
-//         padding: 15,
-//         borderRadius: 50,
-//         alignItems: 'center',
-//         marginTop: 20,
-//     },
-//     proceedButtonText: {
-//         fontSize: 18,
-//         fontWeight: 'bold',
-//         color: 'white',
-//     },
-//     image: { width: 150, height: 150, resizeMode: 'contain', marginBottom: 10 },
-//     name: { fontSize: 20, fontWeight: 'bold' },
-//     price: { fontSize: 18, color: '#EC4505', marginBottom: 20 },
-// });
-
-// export default CheckoutScreen;
-
-
-
-
 
 
 
@@ -152,39 +272,104 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
-
-
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Animated,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import { useCart } from '../src/CartContext'; // Import useCart hook
 
 const CheckoutScreen = ({ route, navigation }) => {
-    // const { cart, totalPrice } = route.params;
-    const { cart = [], totalPrice } = route.params || {};
-    const item = route.params?.item; // Ensure item is received
-    console.log('Checkout Item:', item); // Debugging
-    console.log('Total Price:', totalPrice);  // Debugging
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [address, setAddress] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('COD'); // Default: Cash on Delivery
-    const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
+  const { cart = [], totalPrice } = route.params || {};
+  const item = route.params?.item;
+  const { clearCart } = useCart(); // Access clearCart function from CartContext
+
+  console.log('Checkout Item:', item);
+  console.log('Total Price:', totalPrice);
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('COD'); // Default: Cash on Delivery
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
 
-    const handleOrder = () => {
-        const orderData = {
-            name,
-            email,
-            phone,
-            address,
-            cart,
-            totalPrice,
-            shippingMethod: 'Free Delivery',
-            paymentMethod,
-            billingSameAsShipping
-        };
-        console.log('Order Placed:', orderData);
+  const handleOrder = async () => {
+    // Prepare the items array
+    const items = cart.length > 0 ? cart : item ? [item] : [];
+
+    const orderData = {
+      customer: {
+        name: name, // Use the name from state
+        email: email, // Use the email from state
+        phone: phone, // Use the phone from state
+      },
+      items: items.map((item) => ({
+        variantId: item.variants[0]?.id, // Use the variant ID
+        quantity: item.quantity || 1, // Default to 1 if quantity is missing
+      })),
+      paymentMethod: paymentMethod === 'COD' ? 'COD' : 'credit-card', // Map payment method
+      address: {
+        address: address, // Use the address from state
+        city: 'Lahore', // Replace with actual city if available
+        state: 'Punjab', // Replace with actual state if available
+        zip: '12345', // Replace with actual zip if available
+        country: 'Pakistan', // Replace with actual country if available
+        carrier: 'TCS', // Replace with actual carrier if available
+      },
     };
+
+    try {
+      const response = await fetch('https://api.g3studio.co/api/cart/checkout/direct', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: 'connect.sid=s%3A7sXM8QLAA4rc3VhdxSHrBgv-476RgEnT.xhChcpaDkRc6eyXIGpFnCvOwTJfZaxCeCzHQNGbV1tI', // Use the correct cookie
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      // Log the raw response text
+      const responseText = await response.text();
+      console.log('Raw Response:', responseText);
+
+      // Check if the response is valid JSON
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error('JSON Parse Error:', jsonError);
+        throw new Error('Invalid JSON response from server');
+      }
+
+      if (response.ok) {
+        Alert.alert('Success', 'Your order has been placed successfully!');
+        console.log('Order Placed:', result);
+
+        // Clear the cart after successful order
+        await clearCart();
+
+        // Navigate to a success screen or home screen
+        navigation.navigate('OrderSuccess');
+      } else {
+        Alert.alert('Error', 'Failed to place order. Please try again.');
+        console.error('Order Failed:', result);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred. Please check your connection.');
+      console.error('Error:', error);
+    }
+  };
 
   const toggleExpand = () => {
     const finalValue = expanded ? 0 : 1;
@@ -203,353 +388,162 @@ const CheckoutScreen = ({ route, navigation }) => {
     outputRange: [0, 300], // Adjust height for your content
   });
 
-    return (
-        <SafeAreaView style={styles.container}>
-            {/* <Text style={styles.title}>Checkout</Text> */}
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <View style={{ paddingHorizontal: 2, marginTop: 0 }}>
+          <View style={styles.containerani}>
+            <TouchableOpacity style={styles.toggleButton} onPress={toggleExpand}>
+              <Text style={styles.toggleText}>{expanded ? 'Order Summary' : 'Order Summary'}</Text>
+              <Image
+                source={expanded ? require('../assets/Slide Up.png') : require('../assets/Down Button.png')}
+                style={{ width: 20, height: 20, backgroundColor: 'black' }}
+              />
+            </TouchableOpacity>
 
-
-   <View
-            style={{ paddingHorizontal: 2, marginTop: 0 }}>
-
-            <View style={styles.containerani}>
-              <TouchableOpacity style={styles.toggleButton} onPress={toggleExpand}>
-                <Text style={styles.toggleText}>{expanded ? 'Order Summery' : 'Order Summery'}</Text>
-
-                <Image
-                  source={expanded ? require('../assets/Slide Up.png') : require('../assets/Down Button.png')}
-                  style={{ width: 20, height: 20, backgroundColor:"black" }}
-                />
-              </TouchableOpacity>
-
-              <Animated.View style={[styles.content, { maxHeight }]}>
-              {/* <FlatList
-                data={cart}
+            <Animated.View style={[styles.content, { maxHeight }]}>
+              <FlatList
+                data={cart.length > 0 ? cart : item ? [item] : []}
+                nestedScrollEnabled
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => (
-                    <View style={styles.cartItem}>
-                        <Image source={{ uri: item.image }} style={styles.image} />
-                        <View style={styles.itemDetails}>
-                            <Text style={styles.itemName}>{item.name}</Text>
-                            <Text style={styles.itemPrice}>Rs. {item.price}</Text>
-                        </View>
+                  // <ScrollView>
+                  <View style={styles.cartItem}>
+                    <Image source={{ uri: 'https://api.g3studio.co' + item.images[0]?.src }} style={styles.image} />
+                    <View style={styles.itemDetails}>
+                      <Text style={styles.itemName}>{item.title}</Text>
+                      <Text style={styles.itemPrice}>Rs. {item?.variants[0].price}</Text>
+                      <Text style={styles.itemqty}>qty {item.quantity}</Text>
                     </View>
+                  </View>
+                  // {/* </ScrollView> */}
                 )}
-            /> */}
-            <FlatList
-  data={cart.length > 0 ? cart : item ? [item] : []} // Ensure array format
-  keyExtractor={(item, index) => index.toString()}
-  renderItem={({ item }) => (
-    <View style={styles.cartItem}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemPrice}>Rs. {item.price}</Text>
-      </View>
-    </View>
-  )}
-/>
-<Text style={styles.totalPrice}>
-  {/* Total: Rs. {totalPrice} */}
-  Total: Rs. {totalPrice || 0}
-{/* Total: Rs. {cart.reduce((acc, item) => acc + item.price, 0)} */}
-</Text>
-              </Animated.View>
-
-            </View>
-
+              />
+              <Text style={styles.totalPrice}>Total: Rs. {totalPrice || 0}</Text>
+            </Animated.View>
           </View>
-            
+        </View>
 
-            
+        <View style={styles.contactForm}>
+          <TextInput
+            placeholder="Email"
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <TextInput
+            placeholder="Full Name"
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+          />
+          <TextInput
+            placeholder="Phone Number"
+            style={styles.input}
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+          <TextInput
+            placeholder="Address"
+            style={styles.input}
+            value={address}
+            onChangeText={setAddress}
+            keyboardType="default"
+          />
 
-            <View style={styles.contactForm}>
-            <TextInput
-                    placeholder="Email"
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                />
-                <TextInput
-                    placeholder="Full Name"
-                    style={styles.input}
-                    value={name}
-                    onChangeText={setName}
-                />
-                                <TextInput
-                    placeholder="Phone Number"
-                    style={styles.input}
-                    value={phone}
-                    onChangeText={setPhone}
-                    keyboardType="phone-pad"
-                />
-                     <TextInput
-                    placeholder="Address"
-                    style={styles.input}
-                    value={address}
-                    onChangeText={setAddress}
-                    keyboardType="default"
-                />
-                
-   {/* Shipping Method */}
-   <Text style={styles.sectionHeadern}>Shipping Method</Text>
-            <Text style={styles.shippingMethodn}>Free Delivery</Text>
-            
-            {/* Payment Method */}
-            <Text style={styles.sectionHeadern}>Payment</Text>
-            <TouchableOpacity style={styles.radioOptionn} onPress={() => setPaymentMethod('COD')}>
-                <Text style={[styles.radioTextn, paymentMethod === 'COD' && styles.selectedOptionn]}>● Cash on Delivery (COD)</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.radioOptionn} onPress={() => setPaymentMethod('Card')}>
-                <Text style={[styles.radioTextn, paymentMethod === 'Card' && styles.selectedOptionn]}>○ Debit - Credit Card</Text>
-            </TouchableOpacity>
-            
-            {/* Billing Address */}
-            <Text style={styles.sectionHeadern}>Billing Address</Text>
-            <TouchableOpacity style={styles.radioOptionn} onPress={() => setBillingSameAsShipping(true)}>
-                <Text style={[styles.radioTextn, billingSameAsShipping && styles.selectedOptionn]}>● Same as Shipping Address</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.radioOptionn} onPress={() => setBillingSameAsShipping(false)}>
-                <Text style={[styles.radioTextn, !billingSameAsShipping && styles.selectedOptionn]}>○ Use a Different Billing Address</Text>
-            </TouchableOpacity>
+          <Text style={styles.sectionHeadern}>Shipping Method</Text>
+          <Text style={styles.shippingMethodn}>Free Delivery</Text>
 
-            </View>
+          <Text style={styles.sectionHeadern}>Payment</Text>
+          <TouchableOpacity style={styles.radioOptionn} onPress={() => setPaymentMethod('COD')}>
+            <Text style={[styles.radioTextn, paymentMethod === 'COD' && styles.selectedOptionn]}>
+              ● Cash on Delivery (COD)
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.radioOptionn} onPress={() => setPaymentMethod('Card')}>
+            <Text style={[styles.radioTextn, paymentMethod === 'Card' && styles.selectedOptionn]}>
+              ○ Debit - Credit Card
+            </Text>
+          </TouchableOpacity>
 
+          <Text style={styles.sectionHeadern}>Billing Address</Text>
+          <TouchableOpacity style={styles.radioOptionn} onPress={() => setBillingSameAsShipping(true)}>
+            <Text style={[styles.radioTextn, billingSameAsShipping && styles.selectedOptionn]}>
+              ● Same as Shipping Address
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.radioOptionn} onPress={() => setBillingSameAsShipping(false)}>
+            <Text style={[styles.radioTextn, !billingSameAsShipping && styles.selectedOptionn]}>
+              ○ Use a Different Billing Address
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-
-            <TouchableOpacity style={styles.orderButton} onPress={handleOrder}>
-                <Text style={styles.orderText}>Place Order</Text>
-            </TouchableOpacity>
-        </SafeAreaView>
-    );
+        <TouchableOpacity style={styles.orderButton} onPress={handleOrder}>
+          <Text style={styles.orderText}>Place Order</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
 
+// Styles remain the same as in your original code
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-    title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
-    cartItem: { flexDirection: 'row', padding: 10, borderBottomWidth: 1, borderColor: '#ddd' },
-    image: { width: 80, height: 80, marginRight: 10 },
-    itemDetails: { justifyContent: 'center' },
-    itemName: { fontSize: 16, fontWeight: 'bold' },
-    itemPrice: { fontSize: 16, color: '#EC4505' },
-    totalPrice: { fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginVertical: 15,  },
-    contactForm: { marginVertical: 10 },
-    input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 10, marginBottom: 10 },
-    orderButton: { backgroundColor: '#EC4505', padding: 15, borderRadius: 50, alignItems: 'center', marginTop: 10 },
-    orderText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-    containerani: {
-      backgroundColor: 'white',
-      padding: 10,
-      borderRadius: 20,
-      elevation: 3,
-  
-    },
-    toggleButton: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: 10,
-    },
-    toggleText: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: 'black'
-    },
-    content: {
-      overflow: "scroll",
-    },
-    description: {
-      padding: 10,
-      fontSize: 16,
-      color: 'white',
-    },
-    containern: { padding: 20 },
-    headern: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
-    cartItemn: { flexDirection: 'row', marginBottom: 10 },
-    imagen: { width: 50, height: 50, marginRight: 10 },
-    itemNamen: { fontSize: 16 },
-    itemPricen: { color: 'gray' },
-    inputn: { borderWidth: 1, padding: 10, marginBottom: 10, borderRadius: 5 },
-    sectionHeadern: { fontSize: 18, fontWeight: 'bold', marginTop: 10 },
-    shippingMethodn: { fontSize: 16, color: 'green', marginVertical: 5 },
-    radioOptionn: { flexDirection: 'row', alignItems: 'center', marginVertical: 5 },
-    radioTextn: { fontSize: 16 },
-    selectedOptionn: { fontWeight: 'bold' },
-    totalPricen: { fontSize: 18, fontWeight: 'bold', marginTop: 10 },
-    payButtonn: { backgroundColor: 'orange', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 10 },
-    payButtonTextn: { color: 'white', fontSize: 18 }
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
+  cartItem: { flexDirection: 'row', padding: 10, borderBottomWidth: 1, borderColor: '#ddd' },
+  image: { width: 80, height: 80, marginRight: 10 },
+  itemDetails: { justifyContent: 'center' },
+  itemName: { fontSize: 16, fontWeight: 'bold' },
+  itemPrice: { fontSize: 16, color: '#EC4505' },
+  itemqty: { fontSize: 16, color: 'Black' },
+  totalPrice: { fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginVertical: 15 },
+  contactForm: { marginVertical: 10 },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 10, marginBottom: 10 },
+  orderButton: { backgroundColor: '#EC4505', padding: 15, borderRadius: 50, alignItems: 'center', marginTop: 10 },
+  orderText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  containerani: {
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 20,
+    elevation: 3,
+  },
+  toggleButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+  },
+  toggleText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  content: {
+    overflow: 'scroll',
+  },
+  description: {
+    padding: 10,
+    fontSize: 16,
+    color: 'white',
+  },
+  containern: { padding: 20 },
+  headern: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
+  cartItemn: { flexDirection: 'row', marginBottom: 10 },
+  imagen: { width: 50, height: 50, marginRight: 10 },
+  itemNamen: { fontSize: 16 },
+  itemPricen: { color: 'gray' },
+  inputn: { borderWidth: 1, padding: 10, marginBottom: 10, borderRadius: 5 },
+  sectionHeadern: { fontSize: 18, fontWeight: 'bold', marginTop: 10 },
+  shippingMethodn: { fontSize: 16, color: 'green', marginVertical: 5 },
+  radioOptionn: { flexDirection: 'row', alignItems: 'center', marginVertical: 5 },
+  radioTextn: { fontSize: 16 },
+  selectedOptionn: { fontWeight: 'bold' },
+  totalPricen: { fontSize: 18, fontWeight: 'bold', marginTop: 10 },
+  payButtonn: { backgroundColor: 'orange', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 10 },
+  payButtonTextn: { color: 'white', fontSize: 18 },
 });
 
 export default CheckoutScreen;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import React, { useState, useEffect } from 'react';
-// import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-
-// const CheckoutScreen = () => {
-//   // State for cart items (initially empty)
-//   const [cartItems, setCartItems] = useState([]);
-
-//   // Simulate fetching cart data from backend (API)
-//   useEffect(() => {
-//     // Replace this with your actual API call or data fetching logic
-//     const fetchCartData = async () => {
-//       // Simulated API response
-//       const response = [
-//         { id: 1, image: require('./path/to/image1.jpg'), title: 'Down Milky Broad Regular Pi', price: 120 },
-//         { id: 2, image: require('./path/to/image2.jpg'), title: 'Tag Pack', price: 100 },
-//         { id: 3, image: require('./path/to/image3.jpg'), title: 'Adams Restaurized Milk', price: 120, discount: '15% off' },
-//       ];
-//       setCartItems(response);
-//     };
-
-//     fetchCartData();
-//   }, []);
-
-//   // Calculate subtotal
-//   const calculateSubtotal = () => {
-//     return cartItems.reduce((total, item) => total + item.price, 0);
-//   };
-
-//   // Calculate total
-//   const calculateTotal = () => {
-//     return calculateSubtotal(); // Add additional charges if needed
-//   };
-
-//   return (
-//     <ScrollView style={styles.container}>
-//       <Text style={styles.header}>My Cart Items</Text>
-
-//       {/* Display Cart Items */}
-//       {cartItems.map((item) => (
-//         <View key={item.id} style={styles.itemContainer}>
-//           <Image source={item.image} style={styles.itemImage} />
-//           <View style={styles.itemDetails}>
-//             <Text style={styles.itemTitle}>{item.title}</Text>
-//             <Text style={styles.itemPrice}>Rs. {item.price}</Text>
-//             {item.discount && <Text style={styles.itemDiscount}>{item.discount}</Text>}
-//           </View>
-//         </View>
-//       ))}
-
-//       {/* Subtotal and Total */}
-//       <View style={styles.summaryContainer}>
-//         <Text style={styles.summaryText}>Subtotal: Rs. {calculateSubtotal()}</Text>
-//         <Text style={styles.summaryText}>Total: Rs. {calculateTotal()}</Text>
-//       </View>
-
-//       {/* User Input Form */}
-//       <View style={styles.formContainer}>
-//         <TextInput style={styles.input} placeholder="Full Name" />
-//         <TextInput style={styles.input} placeholder="Mobile Number" keyboardType="phone-pad" />
-//         <TextInput style={styles.input} placeholder="Address" />
-//         <TextInput style={styles.input} placeholder="City" />
-//         <TextInput style={styles.input} placeholder="Postal Code" keyboardType="numeric" />
-//       </View>
-
-//       {/* Pay Now Button */}
-//       <TouchableOpacity style={styles.payButton}>
-//         <Text style={styles.payButtonText}>Pay Now</Text>
-//       </TouchableOpacity>
-//     </ScrollView>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     padding: 10,
-//   },
-//   header: {
-//     fontSize: 20,
-//     fontWeight: 'bold',
-//     marginBottom: 10,
-//   },
-//   itemContainer: {
-//     flexDirection: 'row',
-//     marginBottom: 10,
-//   },
-//   itemImage: {
-//     width: 80,
-//     height: 80,
-//     borderRadius: 10,
-//   },
-//   itemDetails: {
-//     marginLeft: 10,
-//     justifyContent: 'center',
-//   },
-//   itemTitle: {
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
-//   itemPrice: {
-//     fontSize: 14,
-//     color: '#888',
-//   },
-//   itemDiscount: {
-//     fontSize: 12,
-//     color: '#EC4505',
-//   },
-//   summaryContainer: {
-//     marginTop: 20,
-//     padding: 10,
-//     backgroundColor: '#f9f9f9',
-//     borderRadius: 10,
-//   },
-//   summaryText: {
-//     fontSize: 16,
-//     marginBottom: 5,
-//   },
-//   formContainer: {
-//     marginTop: 20,
-//   },
-//   input: {
-//     borderWidth: 1,
-//     borderColor: '#ccc',
-//     borderRadius: 5,
-//     padding: 10,
-//     marginBottom: 10,
-//   },
-//   payButton: {
-//     backgroundColor: '#EC4505',
-//     padding: 15,
-//     borderRadius: 50,
-//     alignItems: 'center',
-//     marginTop: 20,
-//   },
-//   payButtonText: {
-//     color: 'white',
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
-// });
-
-// export default CheckoutScreen;
