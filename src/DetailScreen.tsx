@@ -2,24 +2,10 @@ import React, { useState, useEffect, useContext  } from 'react';
 import { View, SafeAreaView, Image, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Alert, Animated, FlatList } from 'react-native';
 const width = Dimensions.get('screen').width / 2 - 30;
 import { CartContext,  } from '../src/CartContext'; 
+ 
 
 
-
-const plants = [
-  { id: '1', name: "Nexton Sunblock Ligtening Lotion 30 ml", price: 1000, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786', about: 'This is about section its expand and collapse for product discription' },
-  { id: '2', name: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-  { id: '3', name: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-  { id: '4', name: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-  { id: '5', name: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-  { id: '6', name: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-  { id: '7', name: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: '15%', image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-  { id: '8', name: "Nexton Sunblock Ligtening Lotion 30 ml", price: 100, Discount: "", image: 'https://lahorebasket.com/cdn/shop/files/nexton-sunblock-ligtening-lotion-30-ml-438468_360x.jpg?v=1737618786' },
-];
-
-
-
-
-  const DetailsScreen = ({ route, navigation }) => {
+  const DetailsScreen = ({ route, navigation }:any) => {
     
     console.log(route.params)
     // const { item } = route.params; // Ensure item is being accessed correctly
@@ -32,13 +18,28 @@ const plants = [
       updateQuantity = () => {}, 
       cartQuantity = 0 
     } = cartContext || {};
+     interface Product {
+            id: number;
+            categoryId?: number;
+            title: string;
+            price: number;
+            discount?: number;
+            images: string;
+            Discount: number;
+          }
+      // const { categoryId, categoryName } = route.params;
+      const [products, setProducts] = useState<Product[]>([]);
 
-    const [data, setData] = useState(plants);
+
+    // const [data, setData] = useState(plants);
     const [expanded, setExpanded] = useState(false);
     const [animation] = useState(new Animated.Value(0));
     const { ...item } = route.params;
     
     
+
+
+
 
     const toggleExpand = () => {
       const finalValue = expanded ? 0 : 1;
@@ -58,9 +59,37 @@ const plants = [
     });
 
 
+ // Fetch products from API
+    useEffect(() => {
+      const fetchProducts = async () => {
+        try {
+          const response = await fetch('https://api.g3studio.co/api/products');
+          const data = await response.json();
+  
+
+          if (data && Array.isArray(data.products)) {
+            setProducts(data.products);
+          } else {
+            console.error('Products array not found in response:', data);
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        }
+      };
+  
+      fetchProducts();
+    }, []); 
 
 
-  const Card = ({ item }) => (
+
+
+
+
+  const Card = ({ item }:any) => {
+      const discountPercentage = Math.round(
+        ((item?.variants[0].price - item?.variants[0].discountPrice) / item?.variants[0].price) * 100
+      );
+      return(
 
     <TouchableOpacity style={{ marginBottom: 20, marginTop: 5, }}
 
@@ -78,7 +107,7 @@ const plants = [
             alignItems: 'center',
           }}>
           <Image
-            source={{ uri: item.image }}
+            source={{ uri: "https://api.g3studio.co"+item.images[0]?.src }}
             style={{
               resizeMode: 'contain', height: "100%", width: "100%"
 
@@ -87,7 +116,8 @@ const plants = [
 
         </View>
 
-        {item?.Discount && (
+        {item?.variants[0].discountPrice && item?.variants[0].price >  item?.variants[0].discountPrice && (
+
           <View style={{
             height: 30,
             width: '25%',
@@ -101,7 +131,7 @@ const plants = [
 
           }}>
 
-            <Text style={{ color: 'white', fontSize: 14 }}>{item.Discount}</Text>
+            <Text style={{ color: 'white', fontSize: 14 }}>{discountPercentage}%</Text>
 
           </View>)}
 
@@ -112,49 +142,82 @@ const plants = [
           numberOfLines={2}
           ellipsizeMode="tail"
         >
-          {item.name}
+          {item.title}
         </Text>
         <View
           style={{
             alignItems: 'center',
           }}>
           <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#EC4505' }}>
-            Rs. {item.price}
+          Rs. {item?.variants[0].discountPrice ? item.variants[0].discountPrice : item?.variants[0].price}
+
           </Text>
 
         </View>
 
       </View>
-      <TouchableOpacity
-        activeOpacity={0.6}
-      // style={{}}
-      >
+     {cart.some((cartItem) => cartItem.id === item.id) ? (
+                     // If item is already in cart, show quantity buttons
+                     <View style= {style.aquantityContainer} >
+                       <TouchableOpacity  
+                       onPress={() => {
+             const currentItem = cart.find((cartItem) => cartItem.id === item.id);
+             if (currentItem && currentItem.quantity > 1) {
+               updateQuantity(item.id, currentItem.quantity - 1);
+             } else {
+               removeFromCart(item.id); // Agar quantity 1 hai, toh item remove ho jaye
+             }
+           }} style={style.aquantityBtn}>
+                         <Text style={style.abtnText}>-</Text>
+                       </TouchableOpacity>
+                       
+                       <Text style={style.aquantityText}>
+                       {cart.find((cartItem) => cartItem.id === item.id)?.quantity || 1}
+                       </Text>
+                       
+                       <TouchableOpacity
+                        onPress={() => {
+             const currentItem = cart.find((cartItem) => cartItem.id === item.id);
+             if (currentItem) {
+               updateQuantity(item.id, currentItem.quantity + 1);
+             }
+           }}  style={style.aquantityBtn}>
+                         <Text style={style.abtnText}>+</Text>
+                       </TouchableOpacity>
+                     </View>
+                   ) : (
+                     // If item is NOT in cart, show "Add to Cart" button
+                     <TouchableOpacity onPress={() => addToCart(item)} style={style.aaddToCartBtn}>
         <View
-          style={{
-
-            height: 30,
-            width: '100%',
-            backgroundColor: "#FCD6C7",
-            borderBottomEndRadius: 10,
-            borderBottomStartRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-
-          }}>
-          <Image
-            style={{ height: 25, width: 25 }}
-            source={require('../assets/Fast Cart.png')}
-          />
-
-        </View>
-      </TouchableOpacity>
-
-    </TouchableOpacity>
+                     style={{
+                       
+                       alignSelf:'center',
+                       height: 25,
+                       width,
+                       backgroundColor: "#FCD6C7",
+                       borderBottomEndRadius: 10,
+                       borderBottomStartRadius: 10,
+                       justifyContent: 'center',
+                       alignItems: 'center',
+           
+                     }}
+                     >
+                     <Image
+                       style={{ height: 20, width: 20 }}
+                       source={require('../assets/Fast Cart.png')}
+                     />
+           
+                   </View>
+                     </TouchableOpacity>
+                   )}
+                
+               </TouchableOpacity>
 
 
 
 
   );
+}
 
   const discountPercentage = Math.round(
     ((item?.variants[0].price - item?.variants[0].discountPrice) / item?.variants[0].price) * 100
@@ -172,13 +235,13 @@ const plants = [
 
 
 
+{/* <ScrollView style={{ flex: 1, }}> */}
 
 
       <View style={style.imageContainer}>
 
 
         <Image
-          // source={{ uri: item.image }}
           source={{ uri: "https://api.g3studio.co"+item.images[0]?.src }}
 
           style={{ height: '100%', width: '100%', resizeMode: 'contain' }}
@@ -205,7 +268,7 @@ const plants = [
         )
         }
       </View>
-
+      {/* </ScrollView> */}
       <ScrollView style={{ flex: 1, }}>
 
         <View style={style.detailsContainer}>
@@ -252,12 +315,13 @@ const plants = [
                   fontSize: 20,
                 }}>
                 Rs. {item?.variants[0].price}
+                {/* Rs. {item?.variants?.[0]?.discountPrice ?? item?.variants?.[0]?.price ?? 'N/A'} */}
               </Text>}
               
 
             </View>
+            
           </View>
-
 
           <View
             style={{ paddingHorizontal: 15, marginTop: 4,  }}>
@@ -283,7 +347,7 @@ const plants = [
           </View>
 
 
-
+{/* <ScrollView> */}
 
           <View style={style.containerimg}>
             <View style={style.itemimg}>
@@ -313,7 +377,7 @@ const plants = [
               columnWrapperStyle={{ justifyContent: 'space-between' }}
               showsVerticalScrollIndicator={false}
               numColumns={2}
-              data={data}
+              data={products}
 
               renderItem={({ item }) => <Card item={item} />}
             />
@@ -321,12 +385,11 @@ const plants = [
           </View>
 
 
-
-
         </View>
 
+        </ScrollView>
+        
 
-      </ScrollView>
 
 
       <View style={{ width: '100%', backgroundColor: '#EC4505', position: 'absolute', bottom: 0, padding: 10 }}>
@@ -335,7 +398,10 @@ const plants = [
             <TouchableOpacity style={style.addToCartBtn} 
             onPress={() => navigation.navigate('Checkout', {  
               item,
-              totalPrice: item.price })}
+              totalPrice:
+              //  item.price 
+              item?.variants[0].discountPrice ?? item?.variants[0].price   
+            })}
              
               // totalPrice: item?.variants[0].price })}
             // onPress={() => navigation.navigate('Checkout' )}
@@ -571,6 +637,48 @@ const style = StyleSheet.create({
     elevation: 8,
     shadowColor: 'black'
 
+
+  },
+  aquantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FCD6C7',
+    borderRadius: 10,
+    justifyContent:'center',
+    // marginHorizontal: 15, // Added margin for spacing1
+    // padding: 5,
+    width
+  },
+  aquantityBtn: {
+    backgroundColor: '#EC4505',
+    paddingVertical: 2,
+    paddingHorizontal: "15%",
+    // borderRadius: 5,
+    borderBottomEndRadius: 10,
+    borderBottomStartRadius: 10,
+   
+  },
+ abtnText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  aquantityText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginHorizontal: 22,
+    color:'#EC4505',
+    backgroundColor:'#FCD6C7'
+  },
+  aaddToCartBtn: {
+    // backgroundColor: 'white',
+    // paddingVertical: 10,
+    // paddingHorizontal: 30,
+    borderRadius: 15,
+    // flexDirection: 'row',
+
+    alignItems: 'center',
+    // marginHorizontal: 5, // Added margin for spacing
 
   },
 });

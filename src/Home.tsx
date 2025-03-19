@@ -18,6 +18,7 @@ import FourinOneBanner from './FourinOneBanner';
 import { useNavigation } from '@react-navigation/native';
 import * as Network from "expo-network";
 import Promotionhomeview from './Promotionhomeview';
+import OrderSuccess from './OrderSuccess';
 // import { usePushNotifications } from '../usePushNotifications';
 
 const { width } = Dimensions.get('window');

@@ -306,7 +306,7 @@ const Search = ({ navigation }) => {
 
   const shuffleRandomProducts = (productsList: Product[]) => {
     const shuffled = [...productsList].sort(() => 0.5 - Math.random());
-    setRandomProducts(shuffled.slice(0, 10)); // Pick 6 random products
+    setRandomProducts(shuffled.slice(0, 10)); // Pick 10 random products
   };
 
   const handleSearch = (text: string) => {
@@ -318,11 +318,21 @@ const Search = ({ navigation }) => {
       );
       setSearchResults(filteredData);
     }
-  };
+  }; 
 
-  const Card = ({ item }) => (
+  const Card = ({ item }) => {
+    console.log("Item Data:", item);
+    console.log("Variants:", item?.variants);
+    console.log("Price:", item?.variants?.[0]?.price);
+    // console.log("Discount Price:", item?.variants?.[0]?.discountPrice);
+    const discountPercentage = item?.variants?.[0]?.price && item?.variants?.[0]?.discountPrice
+    ? Math.round(
+        ((item.variants[0].price - item.variants[0].discountPrice) / item.variants[0].price) * 100
+      )
+    : 0;
+    return (
     <TouchableOpacity 
-      style={{ marginBottom: 20, marginTop: 5 }}
+      style={{ marginBottom: 10, marginTop: 5 }}
       activeOpacity={0.8}
       onPress={() => navigation.navigate('DetailsScreen', item)}
     >
@@ -334,18 +344,22 @@ const Search = ({ navigation }) => {
           />
         </View>
 
-        {item?.Discount && (
+        {item?.variants[0].discountPrice && item?.variants[0].price >  item?.variants[0].discountPrice && (
+
           <View style={styles.discountTag}>
-            <Text style={{ color: 'white', fontSize: 14 }}>{item.Discount}</Text>
+            <Text style={{ color: 'white', fontSize: 14 }}>{isNaN(discountPercentage) ? 'N/A' : `${discountPercentage}%`}</Text>
           </View>
-        )}
+        )}  
 
         <Text style={styles.productTitle} numberOfLines={2} ellipsizeMode="tail">
           {item.title}
         </Text>
 
         <View style={{ alignItems: 'center' }}>
-          <Text style={styles.priceText}>Rs. {item?.variants[0].price}</Text>
+          <Text style={styles.priceText}>
+    {/* Rs. {item?.variants[0].discountPrice ? item.variants[0].discountPrice : item?.variants[0].price}  */}
+    Rs. {item?.variants?.[0]?.discountPrice ?? item?.variants?.[0]?.price ?? 'N/A'}
+    </Text>
         </View>
       </View>
 
@@ -366,7 +380,8 @@ const Search = ({ navigation }) => {
           </TouchableOpacity>
 
           <Text style={styles.quantityText}>
-            {cart.find(cartItem => cartItem.id === item.id)?.quantity || 1}
+            {/* {cart.find(cartItem => cartItem.id === item.id)?.quantity || 1} */}
+            {cart.find(cartItem => cartItem.id === item.id)?.quantity ?? '1'}
           </Text>
 
           <TouchableOpacity
@@ -390,7 +405,7 @@ const Search = ({ navigation }) => {
       )}
     </TouchableOpacity>
   );
-
+  }
   return (
     <ScrollView>
     <View style={{ margin: 10 }}>
@@ -432,7 +447,7 @@ const Search = ({ navigation }) => {
       )}
 
       <Text style={{ fontWeight: 'bold', fontSize: 20, marginTop: 20 }}>You May Also Like</Text>
-      <SafeAreaView style={{ marginBottom: 150 }}>
+      <SafeAreaView style={{ marginBottom: 10 }}>
         <FlatList
           columnWrapperStyle={{ justifyContent: 'space-between' }}
           showsVerticalScrollIndicator={false}

@@ -234,7 +234,7 @@ const AppNavigator = ({ }) => {
 })}
 />
 
-<Stack.Screen name="OrderSuccess" component={OrderSuccess } options={{headerStyle:{backgroundColor:'#EC4505'}, title:'success', headerTitleStyle:{fontWeight:'700'}, headerTitleAlign:'center', headerTintColor:'white' }}/>
+<Stack.Screen name="OrderSuccess" component={OrderSuccess } options={{headerStyle:{backgroundColor:'#EC4505',},headerBackVisible: false, title:'Confirmed', headerTitleStyle:{fontWeight:'700'}, headerTitleAlign:'center', headerTintColor:'white',  }}/>
 
       <Stack.Screen name="Checkout" component={CheckoutScreen } options={{headerStyle:{backgroundColor:'#EC4505'}, title:'Checkout', headerTitleStyle:{fontWeight:'700'}, headerTitleAlign:'center', headerTintColor:'white' }}/>
       <Stack.Screen name="ProductListScreen" component={ProductListScreen} 

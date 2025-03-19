@@ -281,7 +281,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  Animated,
+  Animated, 
   ScrollView,
   Alert,
 } from 'react-native';

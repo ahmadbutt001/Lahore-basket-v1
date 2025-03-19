@@ -1,7 +1,7 @@
 {
   "cli": {
     "version": ">= 15.0.12",
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -11,12 +11,9 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {
-      "autoIncrement": true
-    },
-    "android-aab": { 
+    "android-aab": {
       "android": {
-        "buildType": "app-bundle" 
+        "buildType": "app-bundle"  
       }
     }
   },

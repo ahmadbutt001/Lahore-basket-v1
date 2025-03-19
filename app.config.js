@@ -7,6 +7,10 @@ export default {
       web: {
         favicon: "./assets/favicon.png",
       },
+    android: {
+      versionCode: 11,  
+      package: "com.grycoproduction.lahorebasket"  
+    },
       extra: {
         eas: {
           projectId: "7bff8ee3-580f-4a37-8bc6-49648caab61a",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext  } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from "@react-navigation/native";
@@ -11,9 +11,9 @@ const width = Dimensions.get('screen').width / 2 - 40;
 
 
   
-const CartScreen = () => { 
+const CartScreen = ({item}:any) => { 
       const cartContext = useContext(CartContext);
-    
+     
         const { 
           // cart = [], 
           addToCart = () => {}, 
@@ -37,7 +37,7 @@ const CartScreen = () => {
     // const [cart, setCart] = useState([]);
     const [cart, setCart] = useState<{ images: string; title: string; price: number; Discount: string; quantity: number; id:number; }[]>([]);
 //   const { item } = route.params;  // Yahan selected product ka data ayega
-  // const [quantity, setQuantity] = useState(0);s
+  // const [quantity, setQuantity] = useState(0);
   const [cartQuantity, setCartQuantity] = useState(0);
 
 
@@ -178,10 +178,11 @@ useFocusEffect(
 };
 
 
-    const Card = ({ items }) => {
+    const Card = ({ items }:any) => {
       const discountPercentage = Math.round(
         ((items?.variants[0].price - items?.variants[0].discountPrice) / items?.variants[0].price) * 100
       );
+      
       return (
       // console.log("Item being passed:", item), // Debugging line
         <TouchableOpacity style={{ marginBottom: 20, marginTop: 5, }}
@@ -319,11 +320,16 @@ useFocusEffect(
     }
 
 
-   
-    
+    const discountPercentage = item?.variants?.[0]?.price && item?.variants?.[0]?.discountPrice
+    ? Math.round(
+        ((item.variants[0].price - item.variants[0].discountPrice) / item.variants[0].price) * 100
+      )
+    : 0;
+    console.log(discountPercentage);
     return (
-
+ 
         <SafeAreaView style={{flex:1, }}>
+          <ScrollView>
             <View>
                 <Text style={{fontWeight:'bold', fontSize:18, padding:12}}>Just for you</Text>
 
@@ -340,12 +346,12 @@ useFocusEffect(
             </View>
 
 
-            <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center',   }}>Your Cart</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center',  bottom:10 }}>Your Cart</Text>
 
 
 
             <FlatList
-            style={{marginBottom:40}}
+            style={{marginBottom:60}}
                 data={cart}
                 // scrollEnabled
                 keyExtractor={(item, index) => index.toString()}
@@ -360,7 +366,7 @@ useFocusEffect(
                               >
                                 {item.title} 
                       </Text> 
-                     <Text style={{fontSize:18, fontWeight:'bold', color:'#EC4505'}}>Rs. {item?.variants[0].price}  </Text>
+                     <Text style={{fontSize:18, fontWeight:'bold', color:'#EC4505'}}>  Rs. {item?.variants[0].discountPrice ? item.variants[0].discountPrice : item?.variants[0].price} </Text>
 
 
                      <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth:0, borderColor:'#A5A3A3', left:70, top:20 }}>
@@ -377,7 +383,8 @@ useFocusEffect(
 
                         </View>
                         
-                        {item?.Discount && (
+     {item?.variants[0].discountPrice && item?.variants[0].price >  item?.variants[0].discountPrice && (
+
               <View style={{
                 
                 height: 20,
@@ -392,7 +399,7 @@ useFocusEffect(
     
               }}>
     
-                <Text style={{ color: 'white', fontSize: 14 }}>{item.Discount} Off</Text>
+                <Text style={{ color: 'white', fontSize: 14,  }}>  {isNaN(discountPercentage) ? 'N/A' : `${discountPercentage}%`}</Text>
                 </View>)}
              
 
@@ -416,7 +423,7 @@ useFocusEffect(
                     </View>
                 )}
             />
-
+</ScrollView>
    {cart.some(cartItem => cartItem) ? (
 
          
@@ -440,6 +447,7 @@ useFocusEffect(
 ) : (
 <Text style={{left:20, fontSize:16, fontWeight:'bold', bottom:"50%", color:'gray' }}>Cart is Empty</Text>
 )}   
+
         </SafeAreaView>
     );
 };
